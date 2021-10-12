@@ -1,0 +1,115 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/09/Square/SquareGame.jack
+
+/**
+ * Implements the Square Dance game for two players.
+ * This simple game allows the user to move a black square around
+ * the screen, and change the square's size during the movement.
+ * When the game starts, the square for first palyer of 30 by 30 pixels is shown at the
+ * top-left corner of the screen. The user controls the square as follows.
+ * The 4 arrow keys are used to move the square up, down, left, and right.
+ * The square for second palyer of 30 by 30 pixels is shown at the
+ * down-left corner of the screen. The user controls the square as follows.
+ * The w,s,a,d keys are used to move the square up, down, left, and right.
+ * The 'q' key is used to quit the game. 
+ * If the square of the first player is at the same position, then the first player wins.
+ * If the square of the second player reaches the top-right corner, then the second player wins.
+ */
+
+class SquareGame2 {
+   field Square square; // the square of palyer 1
+   field int direction; // current direction of palyer 1 's square : 
+                        // 0=none, 1=up, 2=down, 3=left, 4=right
+   field Square square2; // the square of palyer 2
+   field int direction2; // current direction of palyer 2 's square : 
+                        // 0=none, 1=up, 2=down, 3=left, 4=right
+   /** Constructs a new Square Game. */
+   constructor SquareGame2 new() {
+      // Creates a 30 by 30 pixels square and positions it at the top-left
+      // of the screen.
+      let square = Square.new(0, 0, 30);
+      // Creates a 30 by 30 pixels square and positions it at the down-left
+      // of the screen.
+      let square2 = Square.new(0, 224, 30);
+      let direction = 0;  // initial state for player1 is no movement
+      let direction2 = 0;  // initial state for player2 is no movement
+      return this;
+   }
+
+   /** Disposes this game. */
+   method void dispose() {
+      do square.dispose();
+      do Memory.deAlloc(this);
+      return;
+   }
+
+   /** Moves the square in the current direction. */
+   method void moveSquare() {
+      if (direction = 1) { do square.moveUp(); }
+      if (direction = 2) { do square.moveDown(); }
+      if (direction = 3) { do square.moveLeft(); }
+      if (direction = 4) { do square.moveRight(); }
+      if (direction2 = 1) { do square2.moveUp(); }
+      if (direction2 = 2) { do square2.moveDown(); }
+      if (direction2 = 3) { do square2.moveLeft(); }
+      if (direction2 = 4) { do square2.moveRight(); }
+      do Sys.wait(5);  // delays the next movement
+      return;
+   }
+
+
+
+
+   /** Runs the game: handles the user's inputs and moves the square accordingly */
+   method void run() {
+      var char key;  // the key currently pressed by the user
+      var boolean exit;
+      var int deltax;
+      var int deltay;
+      let exit = false;
+      while (~exit) {
+         
+         // waits for a key to be pressed
+         while (key = 0) {
+            let key = Keyboard.keyPressed();
+            do moveSquare();
+            let deltax = Math.abs(square2.getx() - square.getx());
+            let deltay = Math.abs(square2.gety() - square.gety());
+            
+            if ((deltax < square.getsize()) & (deltay < square.getsize() )) {
+               do Output.printString("Player 1 wins!");
+               let exit = true;
+               let key = 1;
+            }
+            if ((square2.getx() > 470)  & (square2.gety() < 19)) {
+               do Output.printString("Player 2 wins!");
+               let exit = true;
+               let key = 1;
+            }
+         }
+         if (key = 81)  { let exit = true; }     // q key
+         // if (key = 90)  { do square.decSize(); } // z key
+         // if (key = 88)  { do square.incSize(); } // x key
+         if (key = 131) { let direction = 1; }   // up arrow
+         if (key = 133) { let direction = 2; }   // down arrow
+         if (key = 130) { let direction = 3; }   // left arrow
+         if (key = 132) { let direction = 4; }   // right arrow
+         if (key = 87) { let direction2 = 1; }   // w key
+         if (key = 83) { let direction2 = 2; }   // s arrow
+         if (key = 65)  { let direction2 = 3; }   // a arrow
+         if (key = 68) { let direction2 = 4; }   // d arrow
+         // waits for the key to be released
+         while (~(key = 0)) {
+            let key = Keyboard.keyPressed();
+            do moveSquare();
+         }
+         
+     } // while
+     return;
+   }
+}
+
+
+
